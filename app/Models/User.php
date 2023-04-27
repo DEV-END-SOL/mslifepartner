@@ -11,11 +11,6 @@ use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable implements MustVerifyEmail
 {
-    /*
-    bonus_taken:
-        1: bonus given to the person who referred
-        0: not yet given
-    */
     use HasApiTokens, HasFactory, Notifiable;
     use SoftDeletes;
 
@@ -52,4 +47,8 @@ class User extends Authenticatable implements MustVerifyEmail
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
+    public function userAccount(){
+        return $this->hasOne(UserAccount::class,'user_id');
+    }
 }

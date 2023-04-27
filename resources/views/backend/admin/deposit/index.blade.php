@@ -86,6 +86,13 @@
                                 @else
                                     {{-- {!! actionButtons($item) !!} --}}
                                 @endif
+
+                                {{-- Soft Delete Entry --}}
+                                <form action="{{route($route[0].'.destroy',$item['id'])}}" method='POST'>
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type='submit' class='btn btn-danger mx-1'><i class='fa-regular fa-trash-can'></i> Delete</button>
+                                </form>
                             </td>
 
                             <!-- Modal -->

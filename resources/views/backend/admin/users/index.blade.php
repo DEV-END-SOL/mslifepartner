@@ -27,8 +27,8 @@
                     <tr>
                         <th>Sr</th>
                         <th>Name</th>
-                        <th>Role</th>
                         <th>Reffered By</th>
+                        <th>Net Amount</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -49,9 +49,9 @@
                         <tr>
                             <td class="{{ $bg }}">{{ ++$ser }}</td>
                             <td class="{{ $bg }}">{{ $item['name'] }}</td>
-                            <td class="{{ $bg }}">{{ $item['role'] }}</td>
                             <td class="{{ $bg }}">
                                 {{ $item['referred_by'] ? $referrals[$item['referred_by']] : 'NA' }}</td>
+                            <td class="{{ $bg }}">{{ $item['userAccount']['net_amount'] ?? '-' }}</td>
                             <td class="{{ $bg }}">
                                 @if ($item['role'] == 'RESTRICTED')
                                     <form method="POST" action="{{ route($route[0] . '.update', $item['id']) }}">
@@ -62,6 +62,9 @@
                                     </form>
                                 @else
                                     {!! actionButtons($item) !!}
+                                @endif
+                                @if(Auth::user()['role'] == 'SUPERADMIN')
+                                <a href="{{route('adjustUserAccount',$item['id'])}}" class="btn btn-danger"><i class="fas fa-exclamation-triangle"></i> Set</a>
                                 @endif
                             </td>
                         </tr>

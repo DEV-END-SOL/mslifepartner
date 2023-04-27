@@ -22,13 +22,13 @@ class DepositController extends Controller
     {
         if(in_array(Auth::user()['role'],['SUPERADMIN','ADMIN'])){
             return view('backend.admin.deposit.index')->with([
-                'data' => Deposit::withTrashed()->orderBy('status','DESC')->get(),
+                'data' => Deposit::orderBy('status','DESC')->get(),
                 'pending' => Deposit::where('status','deposited')->count()
             ]);
         }
         else{
             return view('backend.user.deposit.index')->with([
-                'data' => Deposit::where('user_id', Auth::user()['id'])->withTrashed()->get(),
+                'data' => Deposit::where('user_id', Auth::user()['id'])->get(),
                 'totalDeposit' => Deposit::where('user_id', Auth::user()['id'])->sum('amount'),
                 'approvedDeposit' => Deposit::where('user_id', Auth::user()['id'])->where('status','approved')->sum('amount')
             ]);
@@ -113,6 +113,8 @@ class DepositController extends Controller
      */
     public function destroy(Deposit $deposit)
     {
-        //
+        $deposit->delete();
+
+        return back();
     }
 }

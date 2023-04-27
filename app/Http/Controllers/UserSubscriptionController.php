@@ -49,12 +49,12 @@ class UserSubscriptionController extends Controller
             UserAccount::where('user_id',$request['user'])->decrement('net_amount',$investmentPlan['amount']);
 
             // 15% referral bonus
-            $isReferred = User::where('id',Auth::user()['id'])->where('bonus_taken',0)->first();
+            $isReferred = User::where('id',Auth::user()['id'])->where('bonus_given',0)->first();
             // dd(round(0.15*$investmentPlan['amount']));
             if($isReferred){
                 $referredBy = User::where('referral_code',$isReferred['referred_by'])->first('id');
                 UserAccount::where('user_id',$referredBy['id'])->increment('net_amount',round(0.15*$investmentPlan['amount']));
-                User::where('id',Auth::user()['id'])->update(['bonus_taken'=>1]);
+                User::where('id',Auth::user()['id'])->update(['bonus_given'=>round(0.15*$investmentPlan['amount'])]);
             }
 
             return redirect()->route('plans.index');
