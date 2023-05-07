@@ -14,7 +14,7 @@ class SuperadminController extends Controller
         if(Auth::user()['role'] == 'SUPERADMIN'){
             $dep = Models\Deposit::where('user_id',$id)->sum('amount');
             $earning = Models\UserSubscription::where('user_id',$id)->sum('earning');
-            $draw = Models\Withdraw::where('user_id',$id)->sum('amount');
+            $draw = Models\Withdraw::where('user_id',$id)->where('status','transferred')->sum('amount');
 
             $subs = Models\UserSubscription::where('user_id',$id)->get();
             $sub = 0;

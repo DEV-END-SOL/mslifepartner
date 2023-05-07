@@ -6,6 +6,19 @@
 
 @section('content')
     <div class="row">
+        <div class="col-10">
+            <h5>Dashboard</h5>
+        </div>
+        <div class="col-2">
+            <a href="{{ route('profitCalculation') }}" class="btn btn-primary">Run Today's Profit</a>
+        </div>
+    </div>
+    @if (Session::has('message'))
+        <div class="alert alert-info">
+            {{ Session::get('message') }}
+        </div>
+    @endif
+    <div class="row">
         <div class="col-md-6 col-sm-6 grid-margin stretch-card">
             <div class="card card-statistics">
                 <a href="{{ route('users.index') }}">

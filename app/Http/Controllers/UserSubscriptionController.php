@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+
 use Illuminate\Support\Facades\Auth;
 use Session;
 
@@ -8,6 +9,7 @@ use App\Models\UserSubscription;
 use App\Models\InvestmentPlan;
 use App\Models\User;
 use App\Models\UserAccount;
+use App\Models\ProfitRecord;
 use App\Http\Requests\StoreUserSubscriptionRequest;
 use App\Http\Requests\UpdateUserSubscriptionRequest;
 
@@ -46,22 +48,21 @@ class UserSubscriptionController extends Controller
             $data['expire_at'] = $expiry;
             $data->save();
 
-            UserAccount::where('user_id',$request['user'])->decrement('net_amount',$investmentPlan['amount']);
+            UserAccount::where('user_id', $request['user'])->decrement('net_amount', $investmentPlan['amount']);
 
             // 15% referral bonus
-            $isReferred = User::where('id',Auth::user()['id'])->where('bonus_given',0)->first();
+            $isReferred = User::where('id', Auth::user()['id'])->where('bonus_given', 0)->first();
             // dd(round(0.15*$investmentPlan['amount']));
-            if($isReferred){
-                $referredBy = User::where('referral_code',$isReferred['referred_by'])->first('id');
-                UserAccount::where('user_id',$referredBy['id'])->increment('net_amount',round(0.15*$investmentPlan['amount']));
-                User::where('id',Auth::user()['id'])->update(['bonus_given'=>round(0.15*$investmentPlan['amount'])]);
+            if ($isReferred) {
+                $referredBy = User::where('referral_code', $isReferred['referred_by'])->first('id');
+                UserAccount::where('user_id', $referredBy['id'])->increment('net_amount', round(0.15 * $investmentPlan['amount']));
+                User::where('id', Auth::user()['id'])->update(['bonus_given' => round(0.15 * $investmentPlan['amount'])]);
             }
 
             return redirect()->route('plans.index');
-        }
-        else{
-            Session::put('UserSessionVars.InsufficientBalance',1);
-            return redirect()->route('deposits.index')->with(['message'=>'Insufficient balance']);
+        } else {
+            Session::put('UserSessionVars.InsufficientBalance', 1);
+            return redirect()->route('deposits.index')->with(['message' => 'Insufficient balance']);
         }
     }
 
@@ -104,15 +105,23 @@ class UserSubscriptionController extends Controller
     {
         // $oneDayAgo = date('Y-m-d H:i:s',strtotime('-1 day',strtotime(date('Y-m-d H:i:s'))));
         // $userSubscriptions = UserSubscription::where('expire_at','>=',date('Y-m-d'))->where('created_at','<',$oneDayAgo)->get();
-        $userSubscriptions = UserSubscription::where('expire_at','>=',date('Y-m-d'))->get();
+        $userSubscriptions = UserSubscription::where('expire_at', '>=', date('Y-m-d'))->get();
 
-        foreach($userSubscriptions as $userSubscription){
-            // $userSubscription['earning'] += $userSubscription['plan']['daily_profit'];
-            // $userSubscription->save();
+        if (!ProfitRecord::where('date', date('Y-m-d'))->first()) {
+            $profitRecord = new ProfitRecord;
+            $profitRecord['date'] = date('Y-m-d');
+            $profitRecord->save();
 
-            UserSubscription::where('id',$userSubscription['id'])->increment('earning', $userSubscription['plan']['daily_profit']);
-            UserAccount::where('user_id',$userSubscription['user_id'])->increment('net_amount', $userSubscription['plan']['daily_profit']);
+            foreach ($userSubscriptions as $userSubscription) {
+                // $userSubscription['earning'] += $userSubscription['plan']['daily_profit'];
+                // $userSubscription->save();
+
+                UserSubscription::where('id', $userSubscription['id'])->increment('earning', $userSubscription['plan']['daily_profit']);
+                UserAccount::where('user_id', $userSubscription['user_id'])->increment('net_amount', $userSubscription['plan']['daily_profit']);
+            }
+            return back()->with(['message'=>'Profit for today is added successfully.']);
+        } else {
+            return back()->with(['message'=>'Profit for today is already added.']);
         }
-
     }
 }
